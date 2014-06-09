@@ -1,0 +1,14 @@
+0. PREREQUISITES
+Windows or Linux operation system.
+CMake version 2.8 or above.
+Modern C++ compiler such as MinGW, GCC, Microsoft Visual C++ 2010 or above etc.
+
+1. BUILD
+In any directory (source directory is not recommended), run the following
+commands:
+	cmake -DCMAKE_BUILD_TYPE=Release <path_to_source_directory>
+	make/nmake/mingw32-make (according to compiler)
+
+2. INSTALL
+Just copy file qtbinpatcher.exe (for Windows) or qtbinpatcher (for Linux)
+in Qt folder.
