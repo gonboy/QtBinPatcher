@@ -52,6 +52,7 @@ if(WIN32)
     add_definitions(-DOS_WINDOWS)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
+    # MSVC generate manifest file itself.
     if(NOT MSVC)
         set(SRC_LIST ${SRC_LIST} QtBinPatcher.win.rc)
     endif()
@@ -61,6 +62,7 @@ if(WIN32)
     endif()
 
     if(MSVC)
+        # Changing flags for static linking.
         foreach(flag_var CMAKE_CXX_FLAGS
                          CMAKE_CXX_FLAGS_RELEASE
                          CMAKE_CXX_FLAGS_MINSIZEREL)
@@ -84,3 +86,5 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
+
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

@@ -41,9 +41,8 @@
 namespace Functions {
 
     void splice(TStringList* pX, TStringList Y);
-    char nativeSeparator();
-    std::string toNativeSeparators(const std::string& path);
-    std::string toNormalSeparators(const std::string& path);
+    char separator();
+    std::string normalizeSeparators(const std::string& path);
     bool hasOnlyNormalSeparators(const char* path);
     void replace(std::string* pS, char before, const char* after);
     std::string absolutePath(const std::string& relativePath);

@@ -68,7 +68,7 @@ bool TQMake::find(const string& qtDir)
     m_QtVersion = '\0';
 
     if (!qtDir.empty()) {
-        m_QMakePath = qtDir + nativeSeparator() + m_BinDirName + nativeSeparator() + m_QMakeName;
+        m_QMakePath = qtDir + separator() + m_BinDirName + separator() + m_QMakeName;
         if (isFileExists(m_QMakePath))
             m_QtPath = qtDir;
         else
@@ -76,16 +76,16 @@ bool TQMake::find(const string& qtDir)
     }
     else {
         string CurrentDir = currentDir();
-        m_QMakePath = CurrentDir + nativeSeparator() + m_QMakeName;
+        m_QMakePath = CurrentDir + separator() + m_QMakeName;
         if (isFileExists(m_QMakePath)) {
             // One level up.
-            string::size_type pos = CurrentDir.find_last_of(nativeSeparator());
+            string::size_type pos = CurrentDir.find_last_of(separator());
             if (pos != string::npos && pos < CurrentDir.length() - 1)
                 CurrentDir.resize(pos);
             m_QtPath = CurrentDir;
         }
         else {
-            m_QMakePath = CurrentDir + nativeSeparator() + m_BinDirName + nativeSeparator() + m_QMakeName;
+            m_QMakePath = CurrentDir + separator() + m_BinDirName + separator() + m_QMakeName;
             if (!isFileExists(m_QMakePath))
                 m_QMakePath.clear();
             else

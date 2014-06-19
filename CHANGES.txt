@@ -1,3 +1,6 @@
+????-??-??. version 2.0.1.
+    * Changing directory separator for Windows (now is '/').
+
 2014-06-09. Version 2.0.0.
     * Added function to replace in text files specified path
      (--old-dir parameter).

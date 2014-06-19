@@ -114,7 +114,7 @@ bool TQtBinPatcher::getQtDir()
 {
     m_QtDir = m_CmdLineParser.value("qt-dir");
     if (!m_QtDir.empty())
-        m_QtDir = toNormalSeparators(absolutePath(m_QtDir));
+        m_QtDir = normalizeSeparators(absolutePath(m_QtDir));
 
     if (!m_QMake.find(m_QtDir)) {
         LOG_E("Can't find qmake.\n");
@@ -132,7 +132,7 @@ bool TQtBinPatcher::getQtDir()
         }
     }
 
-    m_QtDir = toNormalSeparators(m_QtDir);
+    m_QtDir = normalizeSeparators(m_QtDir);
     LOG_V("Path to Qt directory: \"%s\".\n", m_QtDir.c_str());
     return true;
 }
@@ -146,7 +146,7 @@ bool TQtBinPatcher::getNewQtDir()
         m_NewQtDir = absolutePath(m_NewQtDir);
     else
         m_NewQtDir = m_QtDir;
-    m_NewQtDir = toNormalSeparators(m_NewQtDir);
+    m_NewQtDir = normalizeSeparators(m_NewQtDir);
     LOG_V("Path to new Qt directory: \"%s\".\n", m_NewQtDir.c_str());
 
     if (m_NewQtDir.length() > QT_PATH_MAX_LEN) {
@@ -164,7 +164,7 @@ bool TQtBinPatcher::isPatchNeeded()
 {
     assert(hasOnlyNormalSeparators(m_NewQtDir));
 
-    string OldQtDir = toNormalSeparators(m_QMake.qtInstallPrefix());
+    string OldQtDir = normalizeSeparators(m_QMake.qtInstallPrefix());
     if (!OldQtDir.empty() && !m_NewQtDir.empty())
         return strneq(OldQtDir, m_NewQtDir);
     return false;
@@ -175,19 +175,23 @@ bool TQtBinPatcher::isPatchNeeded()
 void TQtBinPatcher::addTxtPatchValues(const string& oldPath)
 {
     assert(hasOnlyNormalSeparators(oldPath));
+    assert(hasOnlyNormalSeparators(m_NewQtDir));
 
     if (!oldPath.empty()) {
         m_TxtPatchValues[oldPath] = m_NewQtDir;
-        string S = oldPath;
-        replace(S.begin(), S.end(), '/', '\\');
-        m_TxtPatchValues[S] = m_NewQtDir;
 
         #ifdef OS_WINDOWS
+            string Old = oldPath;
+            string New = m_NewQtDir;
+            replace(Old.begin(), Old.end(), '/', '\\');
+            replace(New.begin(), New.end(), '/', '\\');
+            m_TxtPatchValues[Old] = New;
+
             string NewQtDirDS = m_NewQtDir;
             replace(&NewQtDirDS, '/', "\\\\");
-            S = oldPath;
-            replace(&S, '/', "\\\\");
-            m_TxtPatchValues[S] = NewQtDirDS;
+            Old = oldPath;
+            replace(&Old, '/', "\\\\");
+            m_TxtPatchValues[Old] = NewQtDirDS;
         #endif
     }
 }
@@ -226,7 +230,7 @@ void TQtBinPatcher::createBinPatchValues()
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    string newQtDirNative = toNativeSeparators(m_NewQtDir);
+    string newQtDirNative = normalizeSeparators(m_NewQtDir);
     for (size_t i = 0; i < sizeof(Params)/sizeof(Params[0]); ++i)
     {
         const TParam& Param = Params[i];
@@ -236,7 +240,7 @@ void TQtBinPatcher::createBinPatchValues()
             string NewValue = Param.Prefix;
             NewValue.append(newQtDirNative);
             if (Param.Dir != NULL) {
-                NewValue += nativeSeparator();
+                NewValue += separator();
                 NewValue += Param.Dir;
             }
             m_BinPatchValues[OldValue] = NewValue;
@@ -254,13 +258,13 @@ void TQtBinPatcher::createPatchValues()
     m_TxtPatchValues.clear();
     m_BinPatchValues.clear();
 
-    addTxtPatchValues(toNormalSeparators(m_QMake.qtInstallPrefix()));
+    addTxtPatchValues(normalizeSeparators(m_QMake.qtInstallPrefix()));
     createBinPatchValues();
 
     const TStringList* pValues = m_CmdLineParser.values("old-dir");
     if (pValues != NULL)
         for (TStringList::const_iterator Iter = pValues->begin(); Iter != pValues->end(); ++Iter)
-            addTxtPatchValues(toNormalSeparators(*Iter));
+            addTxtPatchValues(normalizeSeparators(*Iter));
 
     LOG_V("\nPatch values for text files:\n%s",
           stringMapToStr(m_TxtPatchValues, "  \"", "\" -> \"", "\"\n").c_str());
@@ -283,12 +287,12 @@ bool TQtBinPatcher::createTxtFilesForPatchList()
     static const TElement Elements4[] = {
         { "/lib/",             "*.prl",              false },
         { "/demos/shared/",    "libdemo_shared.prl", false },
+        { "/lib/pkgconfig/",   "*.pc",               false },
 #if defined(OS_WINDOWS)
         { "/mkspecs/default/", "qmake.conf",         false },
         { "/",                 ".qmake.cache",       false }
 #elif defined(OS_LINUX)
         { "/lib/",             "*.la",               false },
-        { "/lib/pkgconfig/",   "*.pc",               false },
         { "/mkspecs/",         "qconfig.pri",        false }
 #endif
     };

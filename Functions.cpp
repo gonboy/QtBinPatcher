@@ -55,11 +55,11 @@ using namespace std;
 
 #ifdef _MSC_VER
     #define GETCWD _getcwd
-    #define POPEN _popen
+    #define POPEN  _popen
     #define PCLOSE _pclose
 #else
     #define GETCWD getcwd
-    #define POPEN popen
+    #define POPEN  popen
     #define PCLOSE pclose
 #endif
 
@@ -84,7 +84,7 @@ void addLastSeparator(string* pStr)
     if (pStr != NULL && !pStr->empty()) {
         string::const_reverse_iterator Iter = pStr->rbegin();
         if (*Iter != '/' && *Iter != '\\')
-            *pStr += Functions::nativeSeparator();
+            *pStr += Functions::separator();
     }
 }
 
@@ -100,35 +100,15 @@ void Functions::splice(TStringList* pX, TStringList Y)
 }
 
 //------------------------------------------------------------------------------
-// Native directory separator (OS-dependent).
 
-char Functions::nativeSeparator()
+char Functions::separator()
 {
-    #ifdef OS_WINDOWS
-        return '\\';
-    #else
-        return '/';
-    #endif
+    return '/';
 }
 
 //------------------------------------------------------------------------------
 
-string Functions::toNativeSeparators(const string& path)
-{
-    #ifdef OS_WINDOWS
-        string Result = path;
-        for (string::iterator Iter = Result.begin(); Iter != Result.end(); ++Iter)
-            if (*Iter == '/')
-                *Iter = '\\';
-        return Result;
-    #else
-        return path;
-    #endif
-}
-
-//------------------------------------------------------------------------------
-
-string Functions::toNormalSeparators(const string& path)
+string Functions::normalizeSeparators(const string &path)
 {
     #ifdef OS_WINDOWS
         string Result = path;
@@ -208,7 +188,7 @@ string Functions::currentDir()
 
     eraseLastSeparators(&Result);
 
-    return Result;
+    return normalizeSeparators(Result);
 }
 
 //------------------------------------------------------------------------------
