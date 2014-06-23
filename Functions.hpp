@@ -43,8 +43,10 @@ namespace Functions {
     void splice(TStringList* pX, TStringList Y);
     char separator();
     std::string normalizeSeparators(const std::string& path);
+    std::string trimSeparators(const std::string& str);
     bool hasOnlyNormalSeparators(const char* path);
     void replace(std::string* pS, char before, const char* after);
+    bool startsWith(const std::string& str, const char* start);
     std::string absolutePath(const std::string& relativePath);
     std::string currentDir();
     bool isFileExists(const char* fileName);
@@ -64,6 +66,9 @@ namespace Functions {
 
     inline bool hasOnlyNormalSeparators(const std::string& path)
         { return hasOnlyNormalSeparators(path.c_str()); }
+
+    inline bool startsWith(const std::string& str, const std::string& start)
+        { return startsWith(str, start.c_str()); }
 
     inline bool isFileExists(const std::string& fileName)
         { return isFileExists(fileName.c_str()); }

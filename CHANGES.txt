@@ -1,5 +1,7 @@
-????-??-??. version 2.0.1.
+2014-??-??. Version 2.1.0.
     * Changing directory separator for Windows (now is '/').
+    * Autodetect subfolders for Qt parts (support nonstandard subdirs).
+    * Minor improvements and code optimisation.
 
 2014-06-09. Version 2.0.0.
     * Added function to replace in text files specified path
@@ -8,7 +10,7 @@
       (--new-dir parameter). (Earlier this path was determined automatically
       and could not be changed.)
     * Relative path in command line parameter --qt-dir is allowed.
-	* Writing console messages to specified logfile.
+    * Writing console messages to specified logfile.
     * List of files and values for patching according to Qt Installer
       Framework 1.5.0.
     * Backup files are not created by default.

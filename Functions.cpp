@@ -123,6 +123,20 @@ string Functions::normalizeSeparators(const string &path)
 
 //------------------------------------------------------------------------------
 
+string Functions::trimSeparators(const string& str)
+{
+    string Result;
+    string::size_type first = 0;
+    for (; first < str.length(); ++first)
+        if (str[first] != '/' && str[first] != '\\')
+            break;
+    Result = str.substr(first);
+    eraseLastSeparators(&Result);
+    return Result;
+}
+
+//------------------------------------------------------------------------------
+
 bool Functions::hasOnlyNormalSeparators(const char* path)
 {
     while (*path != '\0')
@@ -144,6 +158,14 @@ void Functions::replace(string* pS, char before, const char* after)
     }
 }
 
+
+//------------------------------------------------------------------------------
+
+bool Functions::startsWith(const string& str, const char* start)
+{
+    return str.compare(0, strlen(start), start) == 0;
+}
+
 //------------------------------------------------------------------------------
 
 string Functions::absolutePath(const string& relativePath)
@@ -152,7 +174,7 @@ string Functions::absolutePath(const string& relativePath)
     #if defined(OS_WINDOWS)
         char AbsPath[_MAX_PATH];
         if (_fullpath(AbsPath, relativePath.c_str(), _MAX_PATH) != NULL)
-            Result = AbsPath;
+            Result = normalizeSeparators(AbsPath);
     #elif defined(OS_LINUX)
         char AbsPath[PATH_MAX];
         if (realpath(relativePath.c_str(), AbsPath) != NULL)

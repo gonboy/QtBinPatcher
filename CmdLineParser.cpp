@@ -46,18 +46,6 @@ inline bool strStartingWith(const string& str1, const char *const str2)
 
 //------------------------------------------------------------------------------
 
-TCmdLineParser::TCmdLineParser()
-{
-}
-
-//------------------------------------------------------------------------------
-
-TCmdLineParser::~TCmdLineParser()
-{
-}
-
-//------------------------------------------------------------------------------
-
 bool TCmdLineParser::parse(int argc, const char* argv[])
 {
     m_ErrorString.clear();

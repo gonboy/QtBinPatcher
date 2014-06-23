@@ -112,9 +112,9 @@ bool TQtBinPatcher::checkArgs()
 
 bool TQtBinPatcher::getQtDir()
 {
-    m_QtDir = m_CmdLineParser.value("qt-dir");
+    m_QtDir = normalizeSeparators(m_CmdLineParser.value("qt-dir"));
     if (!m_QtDir.empty())
-        m_QtDir = normalizeSeparators(absolutePath(m_QtDir));
+        m_QtDir = absolutePath(m_QtDir);
 
     if (!m_QMake.find(m_QtDir)) {
         LOG_E("Can't find qmake.\n");
@@ -132,7 +132,6 @@ bool TQtBinPatcher::getQtDir()
         }
     }
 
-    m_QtDir = normalizeSeparators(m_QtDir);
     LOG_V("Path to Qt directory: \"%s\".\n", m_QtDir.c_str());
     return true;
 }
@@ -141,12 +140,13 @@ bool TQtBinPatcher::getQtDir()
 
 bool TQtBinPatcher::getNewQtDir()
 {
-    m_NewQtDir = m_CmdLineParser.value("new-dir");
+    assert(hasOnlyNormalSeparators(m_QtDir));
+
+    m_NewQtDir = normalizeSeparators(m_CmdLineParser.value("new-dir"));
     if (!m_NewQtDir.empty())
         m_NewQtDir = absolutePath(m_NewQtDir);
     else
         m_NewQtDir = m_QtDir;
-    m_NewQtDir = normalizeSeparators(m_NewQtDir);
     LOG_V("Path to new Qt directory: \"%s\".\n", m_NewQtDir.c_str());
 
     if (m_NewQtDir.length() > QT_PATH_MAX_LEN) {
@@ -203,29 +203,28 @@ void TQtBinPatcher::createBinPatchValues()
     struct TParam {
         const char* const Name;
         const char* const Prefix;
-        const char* const Dir;
     };
 
     static const TParam Params[] = {
-        { "QT_INSTALL_PREFIX",       "qt_prfxpath=", NULL           },
-        { "QT_INSTALL_ARCHDATA",     "qt_adatpath=", NULL           },
-        { "QT_INSTALL_DOCS",         "qt_docspath=", "doc"          },
-        { "QT_INSTALL_HEADERS",      "qt_hdrspath=", "include"      },
-        { "QT_INSTALL_LIBS",         "qt_libspath=", "lib"          },
-        { "QT_INSTALL_LIBEXECS",     "qt_lbexpath=", "libexec"      },
-        { "QT_INSTALL_BINS",         "qt_binspath=", "bin"          },
-        { "QT_INSTALL_PLUGINS",      "qt_plugpath=", "plugins"      },
-        { "QT_INSTALL_IMPORTS",      "qt_impspath=", "imports"      },
-        { "QT_INSTALL_QML",          "qt_qml2path=", "qml"          },
-        { "QT_INSTALL_DATA",         "qt_datapath=", NULL           },
-        { "QT_INSTALL_TRANSLATIONS", "qt_trnspath=", "translations" },
-        { "QT_INSTALL_EXAMPLES",     "qt_xmplpath=", "examples"     },
-        { "QT_INSTALL_DEMOS",        "qt_demopath=", "demos"        },
-        { "QT_INSTALL_TESTS",        "qt_tstspath=", "tests"        },
-        { "QT_HOST_PREFIX",          "qt_hpfxpath=", NULL           },
-        { "QT_HOST_BINS",            "qt_hbinpath=", "bin"          },
-        { "QT_HOST_DATA",            "qt_hdatpath=", NULL           },
-        { "QT_HOST_LIBS",            "qt_hlibpath=", "lib"          }
+        { "QT_INSTALL_PREFIX",       "qt_prfxpath="},
+        { "QT_INSTALL_ARCHDATA",     "qt_adatpath="},
+        { "QT_INSTALL_DOCS",         "qt_docspath="},
+        { "QT_INSTALL_HEADERS",      "qt_hdrspath="},
+        { "QT_INSTALL_LIBS",         "qt_libspath="},
+        { "QT_INSTALL_LIBEXECS",     "qt_lbexpath="},
+        { "QT_INSTALL_BINS",         "qt_binspath="},
+        { "QT_INSTALL_PLUGINS",      "qt_plugpath="},
+        { "QT_INSTALL_IMPORTS",      "qt_impspath="},
+        { "QT_INSTALL_QML",          "qt_qml2path="},
+        { "QT_INSTALL_DATA",         "qt_datapath="},
+        { "QT_INSTALL_TRANSLATIONS", "qt_trnspath="},
+        { "QT_INSTALL_EXAMPLES",     "qt_xmplpath="},
+        { "QT_INSTALL_DEMOS",        "qt_demopath="},
+        { "QT_INSTALL_TESTS",        "qt_tstspath="},
+        { "QT_HOST_PREFIX",          "qt_hpfxpath="},
+        { "QT_HOST_BINS",            "qt_hbinpath="},
+        { "QT_HOST_DATA",            "qt_hdatpath="},
+        { "QT_HOST_LIBS",            "qt_hlibpath="}
     };
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -239,10 +238,9 @@ void TQtBinPatcher::createBinPatchValues()
             OldValue.insert(0, Param.Prefix);
             string NewValue = Param.Prefix;
             NewValue.append(newQtDirNative);
-            if (Param.Dir != NULL) {
-                NewValue += separator();
-                NewValue += Param.Dir;
-            }
+            const std::string suffix = m_QMake.suffix(Param.Name);
+            if (!suffix.empty())
+                NewValue += separator() + suffix;
             m_BinPatchValues[OldValue] = NewValue;
         }
         else {
@@ -550,10 +548,9 @@ bool TQtBinPatcher::patchBinFiles()
 TQtBinPatcher::TQtBinPatcher()
 {
     LOG("\n"
-        "QtBinPatcher v2.0.0. Tool for patching paths in Qt binaries.\n"
+        "QtBinPatcher v2.1.0. Tool for patching paths in Qt binaries.\n"
         "Yuri V. Krugloff, 2013-2014. http://www.tver-soft.org\n"
         "This is free software released into the public domain.\n\n");
-
 }
 
 //------------------------------------------------------------------------------
@@ -567,6 +564,8 @@ int TQtBinPatcher::exec(int argc, const char* argv[])
     TLogger::setVerbose(m_CmdLineParser.contains("verbose"));
     LOG_SET_FILENAME(m_CmdLineParser.value("logfile").c_str());
     LOG_V(m_CmdLineParser.dump().c_str());
+    LOG_V("Working directory: \"%s\".\n", currentDir().c_str());
+    LOG_V("Binary file location: \"%s\".\n", argv[0]);
 
     if (m_CmdLineParser.contains("help")) {
         TCmdLineChecker::howToUseMessage();

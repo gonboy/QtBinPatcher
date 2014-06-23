@@ -32,6 +32,7 @@
 #include "QMake.hpp"
 
 #include <string.h>
+#include <assert.h>
 
 #include "Functions.hpp"
 #include "Logger.hpp"
@@ -104,21 +105,19 @@ bool TQMake::query()
         string QMakeStart = "\"\"" + m_QMakePath + "\" -query\"";
         LOG_V("qmake command line: %s.\n", QMakeStart.c_str());
         m_QMakeOutput = getProgramOutput(QMakeStart);
-        LOG_V("\nqmake output:\n%s\n", m_QMakeOutput.c_str());
+        LOG_V("\n"
+              ">>>>>>>>>> BEGIN QMAKE OUTPUT >>>>>>>>>>\n"
+              "%s\n"
+              "<<<<<<<<<<  END QMAKE OUTPUT  <<<<<<<<<<\n",
+              m_QMakeOutput.c_str());
     }
     return !m_QMakeOutput.empty();
 }
 
 //------------------------------------------------------------------------------
 
-bool TQMake::parse()
+bool TQMake::parseValues()
 {
-    m_QMakeValues.clear();
-    m_QtVersion = '\0';
-
-    if (m_QMakeOutput.empty())
-        return false;
-
     const char* const Delimiters = "\r\n";
     char* s = strtok(const_cast<char*>(m_QMakeOutput.c_str()), Delimiters);
     while (s != NULL) {
@@ -143,10 +142,72 @@ bool TQMake::parse()
     }
 
     LOG_V("\nParsed qmake variables:\n");
-    for (TStringMap::const_iterator I = m_QMakeValues.begin(); I != m_QMakeValues.end(); ++I)
-        LOG_V("  %s = \"%s\"\n", I->first.c_str(), I->second.c_str());
+    for (Iter = m_QMakeValues.begin(); Iter != m_QMakeValues.end(); ++Iter)
+        LOG_V("  %s = \"%s\"\n", Iter->first.c_str(), Iter->second.c_str());
 
     return true;
+}
+
+//------------------------------------------------------------------------------
+
+bool TQMake::addSuffix(const TStringMap::const_iterator& Iter, const string& prefix)
+{
+    assert(hasOnlyNormalSeparators(prefix));
+
+    if (!Iter->second.empty())
+    {
+        string value = normalizeSeparators(Iter->second);
+        if (startsWith(value, prefix)) {
+            value = trimSeparators(value.substr(prefix.length()));
+            if (!value.empty())
+                m_Suffixes[Iter->first] = normalizeSeparators(value);
+        }
+        else {
+            LOG_E("QMake variable \"%s\" with value \"%s\" don't have prefix \"%s\".",
+                  Iter->first.c_str(), Iter->second.c_str(), prefix.c_str());
+            return false;
+        }
+    }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+
+bool TQMake::parseSuffixes()
+{
+    string prefix = normalizeSeparators(qtInstallPrefix());
+    string hostPrefix = normalizeSeparators(qtHostPrefix());
+    for (TStringMap::iterator Iter = m_QMakeValues.begin(); Iter != m_QMakeValues.end(); ++Iter)
+    {
+        if (startsWith(Iter->first, "QT_INSTALL_")) {
+            if (!addSuffix(Iter, prefix))
+                return false;
+        }
+        else if (startsWith(Iter->first, "QT_HOST_")) {
+            if (!addSuffix(Iter, hostPrefix))
+                return false;
+        }
+    }
+
+    LOG_V("\nParsed Qt subdirs:\n");
+    for (TStringMap::iterator Iter = m_Suffixes.begin(); Iter != m_Suffixes.end(); ++Iter)
+        LOG_V("  %s = \"%s\"\n", Iter->first.c_str(), Iter->second.c_str());
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+
+bool TQMake::parse()
+{
+    m_QMakeValues.clear();
+    m_Suffixes.clear();
+    m_QtVersion = '\0';
+
+    if (m_QMakeOutput.empty())
+        return false;
+
+    return parseValues() && parseSuffixes();
 }
 
 //------------------------------------------------------------------------------
@@ -155,6 +216,16 @@ string TQMake::value(const string& variable) const
 {
     TStringMap::const_iterator Iter = m_QMakeValues.find(variable);
     if (Iter != m_QMakeValues.end())
+        return Iter->second;
+    return string();
+}
+
+//------------------------------------------------------------------------------
+
+string TQMake::suffix(const string& variable) const
+{
+    TStringMap::const_iterator Iter = m_Suffixes.find(variable);
+    if (Iter != m_Suffixes.end())
         return Iter->second;
     return string();
 }

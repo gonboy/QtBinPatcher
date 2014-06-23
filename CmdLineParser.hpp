@@ -45,9 +45,6 @@ class TCmdLineParser
         std::string m_ErrorString;
 
     public :
-        TCmdLineParser();
-        ~TCmdLineParser();
-
         bool parse(int argc, const char* argv[]);
         const std::string& errorString() const;
 
