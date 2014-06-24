@@ -29,9 +29,7 @@
 
 *******************************************************************************/
 
-#include "CmdLineParser.hpp"
-
-#include <string.h>
+#include "CommonTypes.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -39,62 +37,34 @@ using namespace std;
 
 //------------------------------------------------------------------------------
 
-inline bool strStartingWith(const string& str1, const char *const str2)
+bool TStringListMap::contains(const string& key) const
 {
-    return str1.compare(0, strlen(str2), str2) == 0;
+    return find(key) != end();
 }
 
 //------------------------------------------------------------------------------
 
-TCmdLineParser::TCmdLineParser(int argc, const char* argv[])
+string TStringListMap::value(const string& key) const
 {
-    for (int argNumber = 1; argNumber < argc; ++argNumber)
-    {
-        string Opt = argv[argNumber];
-        if (strStartingWith(Opt, "--") && Opt.length() > 2)
-        {
-            Opt = Opt.substr(2);
-            string::size_type pos = Opt.find("=");
-            string OptName = Opt.substr(0, pos);
-            string OptValue;
-            if (pos != string::npos)
-                OptValue = Opt.substr(pos+1);
-            if (!OptValue.empty())
-                m_ArgsMap[OptName].push_back(OptValue);
-            else
-                m_ArgsMap[OptName];
-        }
-        else {
-            m_ErrorString += "Unknown command line parameter: \"" + Opt + "\".\n";
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-
-string TCmdLineParser::dump() const
-{
-    string Result = "Parsed command line options:\n";
-    for (TStringListMap::const_iterator Iter = m_ArgsMap.begin(); Iter != m_ArgsMap.end(); ++Iter)
-    {
-        Result += "  " + Iter->first + ' ';
-        size_t spaces = Iter->first.length() + 3;
-        TStringList Values = Iter->second;
+    const_iterator Iter = find(key);
+    if (Iter != end()) {
+        const TStringList Values = Iter->second;
         if (!Values.empty())
-        {
-            for (TStringList::const_iterator Jter = Values.begin(); Jter != Values.end(); ++Jter)
-            {
-                if (Jter != Values.begin())
-                    Result += string(spaces, ' ');
-                Result += '\"' + *Jter + "\"\n";
-            }
-        }
-        else {
-            Result += '\n';
-        }
+            return Values.front();
     }
-    Result += '\n';
-    return Result;
+
+    return string();
+}
+
+//------------------------------------------------------------------------------
+
+const TStringList* TStringListMap::values(const string& key) const
+{
+    const_iterator Iter = find(key);
+    if (Iter != end()) {
+        return &(Iter->second);
+    }
+    return NULL;
 }
 
 //------------------------------------------------------------------------------

@@ -1,6 +1,7 @@
-2014-??-??. Version 2.1.0.
+2014-06-??. Version 2.1.0.
     * Changing directory separator for Windows (now is '/').
     * Autodetect subfolders for Qt parts (support nonstandard subdirs).
+    * Internal archiecture improved.
     * Minor improvements and code optimisation.
 
 2014-06-09. Version 2.0.0.

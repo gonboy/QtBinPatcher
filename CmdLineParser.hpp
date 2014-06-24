@@ -34,7 +34,7 @@
 
 //------------------------------------------------------------------------------
 
-#include "Common.hpp"
+#include "CommonTypes.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -45,15 +45,16 @@ class TCmdLineParser
         std::string m_ErrorString;
 
     public :
-        bool parse(int argc, const char* argv[]);
-        const std::string& errorString() const;
-
-        bool contains(const std::string& option) const;
-        const TStringList* values(const std::string& option) const;
-        std::string value(const std::string& option) const;
-        const TStringListMap& argsMap() const;
+        TCmdLineParser(int argc, const char* argv[]);
 
         std::string dump() const;
+
+        const TStringListMap& argsMap() const
+            { return m_ArgsMap; }
+        inline bool hasError() const
+            { return !m_ErrorString.empty(); }
+        inline const std::string& errorString() const
+            { return m_ErrorString; }
 };
 
 //------------------------------------------------------------------------------

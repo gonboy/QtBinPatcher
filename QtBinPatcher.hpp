@@ -34,8 +34,8 @@
 
 //------------------------------------------------------------------------------
 
-#include "Common.hpp"
-#include "CmdLineParser.hpp"
+#include "CommonTypes.hpp"
+//#include "CmdLineParser.hpp"
 #include "QMake.hpp"
 
 //------------------------------------------------------------------------------
@@ -43,17 +43,17 @@
 class TQtBinPatcher
 {
     private :
-        std::string m_QtDir;
-        std::string m_NewQtDir;
-        TStringMap  m_TxtPatchValues;
-        TStringMap  m_BinPatchValues;
-        TStringList m_TxtFilesForPatch;
-        TStringList m_BinFilesForPatch;
-        TCmdLineParser m_CmdLineParser;
-        TQMake m_QMake;
+        const TStringListMap& m_ArgsMap;
+        std::string    m_QtDir;
+        std::string    m_NewQtDir;
+        TStringMap     m_TxtPatchValues;
+        TStringMap     m_BinPatchValues;
+        TStringList    m_TxtFilesForPatch;
+        TStringList    m_BinFilesForPatch;
+        TQMake         m_QMake;
+        bool           m_hasError;
 
-        bool parseArgs(int argc, const char* argv[]);
-        bool checkArgs();
+        std::string getStartDir() const;
         bool getQtDir();
         bool getNewQtDir();
         bool isPatchNeeded();
@@ -67,11 +67,11 @@ class TQtBinPatcher
         bool patchBinFile(const std::string& fileName);
         bool patchTxtFiles();
         bool patchBinFiles();
+        bool exec();
 
+        TQtBinPatcher(const TStringListMap& argsMap);
     public :
-        TQtBinPatcher();
-
-        int exec(int argc, const char* argv[]);
+        static bool exec(const TStringListMap& argsMap);
 
 };
 

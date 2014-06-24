@@ -84,52 +84,22 @@ bool strneq(const string& s1, const string& s2)
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-bool TQtBinPatcher::parseArgs(int argc, const char* argv[])
+string TQtBinPatcher::getStartDir() const
 {
-    if (!m_CmdLineParser.parse(argc, argv)) {
-        LOG(m_CmdLineParser.errorString().c_str());
-        TCmdLineChecker::howToUseMessage();
-        return false;
-    }
-
-    return true;
-}
-
-//------------------------------------------------------------------------------
-
-bool TQtBinPatcher::checkArgs()
-{
-    string ErrorString = TCmdLineChecker::check(m_CmdLineParser.argsMap());
-    if (!ErrorString.empty()) {
-        LOG("%s\n", ErrorString.c_str());
-        TCmdLineChecker::howToUseMessage();
-        return false;
-    }
-    return true;
+    string Result = normalizeSeparators(m_ArgsMap.value("qt-dir"));
+    if (!Result.empty())
+        Result = absolutePath(Result);
+    return Result;
 }
 
 //------------------------------------------------------------------------------
 
 bool TQtBinPatcher::getQtDir()
 {
-    m_QtDir = normalizeSeparators(m_CmdLineParser.value("qt-dir"));
-    if (!m_QtDir.empty())
-        m_QtDir = absolutePath(m_QtDir);
-
-    if (!m_QMake.find(m_QtDir)) {
-        LOG_E("Can't find qmake.\n");
-        return false;
-    }
-    else {
-        LOG_V("Path to qmake: \"%s\".\n", m_QMake.qmakePath().c_str());
-    }
-
+    m_QtDir = m_QMake.qtPath();
     if (m_QtDir.empty()) {
-        m_QtDir = m_QMake.qtPath();
-        if (m_QtDir.empty()) {
-            LOG_E("Can't determine path to Qt directory.\n");
-            return false;
-        }
+        LOG_E("Can't determine path to Qt directory.\n");
+        return false;
     }
 
     LOG_V("Path to Qt directory: \"%s\".\n", m_QtDir.c_str());
@@ -142,7 +112,7 @@ bool TQtBinPatcher::getNewQtDir()
 {
     assert(hasOnlyNormalSeparators(m_QtDir));
 
-    m_NewQtDir = normalizeSeparators(m_CmdLineParser.value("new-dir"));
+    m_NewQtDir = normalizeSeparators(m_ArgsMap.value("new-dir"));
     if (!m_NewQtDir.empty())
         m_NewQtDir = absolutePath(m_NewQtDir);
     else
@@ -259,7 +229,7 @@ void TQtBinPatcher::createPatchValues()
     addTxtPatchValues(normalizeSeparators(m_QMake.qtInstallPrefix()));
     createBinPatchValues();
 
-    const TStringList* pValues = m_CmdLineParser.values("old-dir");
+    const TStringList* pValues = m_ArgsMap.values("old-dir");
     if (pValues != NULL)
         for (TStringList::const_iterator Iter = pValues->begin(); Iter != pValues->end(); ++Iter)
             addTxtPatchValues(normalizeSeparators(*Iter));
@@ -513,7 +483,7 @@ bool TQtBinPatcher::patchBinFile(const string& fileName)
             LOG_E("Error reading from file \"%s\".\n", fileName.c_str());
         }
 
-        delete Buf;
+        delete[] Buf;
         fclose(File);
     }
     else {
@@ -545,75 +515,72 @@ bool TQtBinPatcher::patchBinFiles()
 
 //------------------------------------------------------------------------------
 
-TQtBinPatcher::TQtBinPatcher()
+bool TQtBinPatcher::exec()
 {
-    LOG("\n"
-        "QtBinPatcher v2.1.0. Tool for patching paths in Qt binaries.\n"
-        "Yuri V. Krugloff, 2013-2014. http://www.tver-soft.org\n"
-        "This is free software released into the public domain.\n\n");
-}
-
-//------------------------------------------------------------------------------
-
-int TQtBinPatcher::exec(int argc, const char* argv[])
-{
-    // Initialization.
-    if (!parseArgs(argc, argv)) return -1;
-    if (!checkArgs()) return -1;
-
-    TLogger::setVerbose(m_CmdLineParser.contains("verbose"));
-    LOG_SET_FILENAME(m_CmdLineParser.value("logfile").c_str());
-    LOG_V(m_CmdLineParser.dump().c_str());
-    LOG_V("Working directory: \"%s\".\n", currentDir().c_str());
-    LOG_V("Binary file location: \"%s\".\n", argv[0]);
-
-    if (m_CmdLineParser.contains("help")) {
-        TCmdLineChecker::howToUseMessage();
-        return 0;
-    }
-
-    if (m_CmdLineParser.contains("version"))
-        return 0;
-
-    // Work.
-    if (!getQtDir()) return -1;
-    if (!getNewQtDir()) return -1;
+    if (!getQtDir())
+        return false;
+    if (!getNewQtDir())
+        return false;
 
     TBackup Backup;
-    Backup.setSkipBackup(m_CmdLineParser.contains("nobackup"));
-    if (!Backup.backupFile(m_QtDir + "/bin/qt.conf", TBackup::bmRename)) return -1;
+    Backup.setSkipBackup(m_ArgsMap.contains("nobackup"));
+    if (!Backup.backupFile(m_QtDir + "/bin/qt.conf", TBackup::bmRename))
+        return false;
 
-    if (!m_QMake.query()) return -1;
-    if (!m_QMake.parse()) return -1;
     if (!isPatchNeeded()) {
-        if (m_CmdLineParser.contains("force")) {
+        if (m_ArgsMap.contains("force")) {
             LOG("\nThe new and the old pathes to Qt directory are the same.\n"
                 "Perform forced patching.\n\n");
         }
         else {
             LOG("\nThe new and the old pathes to Qt directory are the same.\n"
                 "Patching not needed.\n");
-            return 0;
+            return true;
         }
     }
 
     createPatchValues();
-    if (!createTxtFilesForPatchList()) return -1;
-    if (!createBinFilesForPatchList()) return -1;
+    if (!createTxtFilesForPatchList() || !createBinFilesForPatchList())
+        return false;
 
-    if (!Backup.backupFiles(m_TxtFilesForPatch)) return -1;
-    if (!Backup.backupFiles(m_BinFilesForPatch)) return -1;
-    if (!patchTxtFiles()) return -1;
-    if (!patchBinFiles()) return -1;
+    if (!Backup.backupFiles(m_TxtFilesForPatch) || !Backup.backupFiles(m_BinFilesForPatch))
+        return false;
+
+    if (!patchTxtFiles() || !patchBinFiles())
+        return false;
 
     // Finalization.
-    if (m_CmdLineParser.contains("backup"))
+    if (m_ArgsMap.contains("backup"))
         Backup.save();
     else
-        if (!Backup.deleteBackup())
-            return -1;
+        if (!Backup.remove())
+            return false;
 
-    return 0;
+    return true;
+}
+
+//------------------------------------------------------------------------------
+
+TQtBinPatcher::TQtBinPatcher(const TStringListMap& argsMap)
+    : m_ArgsMap(argsMap),
+      m_QMake(getStartDir()),
+      m_hasError(false)
+{
+    if (m_QMake.hasError()) {
+        m_hasError = true;
+        LOG_E(m_QMake.errorString().c_str());
+    }
+    else {
+        m_hasError = !exec();
+    }
+}
+
+//------------------------------------------------------------------------------
+
+bool TQtBinPatcher::exec(const TStringListMap& argsMap)
+{
+    TQtBinPatcher QtBinPatcher(argsMap);
+    return !QtBinPatcher.m_hasError;
 }
 
 //------------------------------------------------------------------------------

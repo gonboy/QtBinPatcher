@@ -48,7 +48,7 @@ class TCmdLineChecker
         };
 
         TStringListMap m_ArgsMap;
-        std::string m_ErrorString;
+        std::string    m_ErrorString;
 
         TCmdLineChecker(const TStringListMap& argsMap);
 
@@ -58,7 +58,6 @@ class TCmdLineChecker
 
     public :
         static std::string check(const TStringListMap& argsMap);
-        static void howToUseMessage();
 };
 
 //------------------------------------------------------------------------------

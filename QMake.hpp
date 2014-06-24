@@ -34,7 +34,7 @@
 
 //------------------------------------------------------------------------------
 
-#include "Common.hpp"
+#include "CommonTypes.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -49,10 +49,8 @@ class TQMake
         std::string m_QMakePath;
         std::string m_QtPath;
         std::string m_QMakeOutput;
+        std::string m_ErrorString;
         char        m_QtVersion;
-
-    public :
-        TQMake();
 
         bool find(const std::string& qtDir);
         bool query();
@@ -60,9 +58,18 @@ class TQMake
         bool addSuffix(const TStringMap::const_iterator& Iter, const std::string& prefix);
         bool parseSuffixes();
         bool parse();
+        bool getQtPath();
+
+    public :
+        TQMake(const std::string& qtDir);
+
         std::string value(const std::string& variable) const;
         std::string suffix(const std::string& variable) const;
 
+        inline const std::string& errorString() const
+            { return m_ErrorString; }
+        inline bool hasError() const
+            { return !m_ErrorString.empty(); }
         inline const std::string& qmakePath() const
             { return m_QMakePath; }
         inline const std::string& qtPath() const

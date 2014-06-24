@@ -34,7 +34,7 @@
 
 //------------------------------------------------------------------------------
 
-#include "Common.hpp"
+#include "CommonTypes.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ class TBackup
         TFilesMapping m_FilesMapping;
         bool          m_SkipBackup;
 
-        std::string backupFileName(const std::string& fileName);
+        static std::string backupFileName(const std::string& fileName);
 
     public :
         enum TBackupMethod {
@@ -67,8 +67,8 @@ class TBackup
 
         bool backupFile(const std::string& fileName, TBackupMethod method = bmCopy);
         bool backupFiles(const TStringList& files, TBackupMethod method = bmCopy);
-        bool deleteBackup();
-        bool restoreBackup();
+        bool remove();
+        bool restore();
         void save();
         void setSkipBackup(bool skipBackup);
 

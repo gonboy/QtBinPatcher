@@ -55,44 +55,22 @@ const string TQMake::m_BinDirName("bin");
 
 //------------------------------------------------------------------------------
 
-TQMake::TQMake()
-    : m_QtVersion('\0')
-{
-}
-
-//------------------------------------------------------------------------------
-
 bool TQMake::find(const string& qtDir)
 {
-    m_QMakePath.clear();
-    m_QtPath.clear();
-    m_QtVersion = '\0';
+    const string BaseDir = qtDir.empty() ? currentDir() : qtDir;
 
-    if (!qtDir.empty()) {
-        m_QMakePath = qtDir + separator() + m_BinDirName + separator() + m_QMakeName;
-        if (isFileExists(m_QMakePath))
-            m_QtPath = qtDir;
-        else
+    m_QMakePath = BaseDir + separator() + m_QMakeName;
+    if (!isFileExists(m_QMakePath)) {
+        m_QMakePath = BaseDir + separator() + m_BinDirName + separator() + m_QMakeName;
+        if (!isFileExists(m_QMakePath))
             m_QMakePath.clear();
     }
-    else {
-        string CurrentDir = currentDir();
-        m_QMakePath = CurrentDir + separator() + m_QMakeName;
-        if (isFileExists(m_QMakePath)) {
-            // One level up.
-            string::size_type pos = CurrentDir.find_last_of(separator());
-            if (pos != string::npos && pos < CurrentDir.length() - 1)
-                CurrentDir.resize(pos);
-            m_QtPath = CurrentDir;
-        }
-        else {
-            m_QMakePath = CurrentDir + separator() + m_BinDirName + separator() + m_QMakeName;
-            if (!isFileExists(m_QMakePath))
-                m_QMakePath.clear();
-            else
-                m_QtPath = CurrentDir;
-        }
-    }
+
+    if (m_QMakePath.empty())
+        m_ErrorString += "Can't find qmake.\n";
+    else
+        LOG_V("Path to qmake: \"%s\".\n", m_QMakePath.c_str());
+
     return !m_QMakePath.empty();
 }
 
@@ -101,9 +79,11 @@ bool TQMake::find(const string& qtDir)
 bool TQMake::query()
 {
     m_QMakeOutput.clear();
-    if (!m_QMakePath.empty()) {
+    if (!m_QMakePath.empty())
+    {
         string QMakeStart = "\"\"" + m_QMakePath + "\" -query\"";
         LOG_V("qmake command line: %s.\n", QMakeStart.c_str());
+
         m_QMakeOutput = getProgramOutput(QMakeStart);
         LOG_V("\n"
               ">>>>>>>>>> BEGIN QMAKE OUTPUT >>>>>>>>>>\n"
@@ -121,14 +101,14 @@ bool TQMake::parseValues()
     const char* const Delimiters = "\r\n";
     char* s = strtok(const_cast<char*>(m_QMakeOutput.c_str()), Delimiters);
     while (s != NULL) {
-        string str = s;
-        string::size_type i = str.find(':');
+        const string str(s);
+        const string::size_type i = str.find(':');
         if (i != string::npos) {
             m_QMakeValues[str.substr(0, i)] = str.substr(i + 1);
         }
         else {
-            LOG_E("Error parsing qmake output string:\n"
-                  "  \"%s\"", s);
+            m_ErrorString += "Error parsing qmake output string:\n"
+                             "\"" + str + "\"\n";
             return false;
         }
         s = strtok(NULL, Delimiters);
@@ -163,8 +143,9 @@ bool TQMake::addSuffix(const TStringMap::const_iterator& Iter, const string& pre
                 m_Suffixes[Iter->first] = normalizeSeparators(value);
         }
         else {
-            LOG_E("QMake variable \"%s\" with value \"%s\" don't have prefix \"%s\".",
-                  Iter->first.c_str(), Iter->second.c_str(), prefix.c_str());
+            m_ErrorString += "QMake variable \"" + Iter->first +
+                             "\" with value \"" + Iter->second +
+                             "\" don't have prefix \"" + prefix + "\".\n";
             return false;
         }
     }
@@ -208,6 +189,45 @@ bool TQMake::parse()
         return false;
 
     return parseValues() && parseSuffixes();
+}
+
+//------------------------------------------------------------------------------
+
+bool TQMake::getQtPath()
+{
+    const string& binSuffix = suffix("QT_INSTALL_BINS");
+
+    assert(hasOnlyNormalSeparators(binSuffix));
+
+    int levels = 1;
+    if (!binSuffix.empty()) {
+        ++levels;
+        for (string::size_type i = 0; i < binSuffix.length(); ++i)
+            if (binSuffix[i] == separator())
+                ++levels;
+    }
+
+    m_QtPath = m_QMakePath;
+    for (int i = 0; i < levels; ++i) {
+        // One level up.
+        string::size_type pos = m_QtPath.find_last_of(separator());
+        if (pos != string::npos) {
+            m_QtPath.resize(pos);
+        }
+        else {
+            m_ErrorString += "Can't determine path to Qt directory.\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+
+TQMake::TQMake(const string& qtDir)
+    : m_QtVersion('\0')
+{
+    find(qtDir) && query() && parse() && getQtPath();
 }
 
 //------------------------------------------------------------------------------

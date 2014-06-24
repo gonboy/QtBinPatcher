@@ -37,7 +37,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(SRC_LIST
-    Common.hpp
+    CommonTypes.cpp    CommonTypes.hpp
     Logger.cpp         Logger.hpp
     Functions.cpp      Functions.hpp
     CmdLineParser.cpp  CmdLineParser.hpp

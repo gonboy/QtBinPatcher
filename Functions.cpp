@@ -298,9 +298,8 @@ bool Functions::copyFile(const char* fromFileName, const char* toFileName)
         FILE* dst = fopen(toFileName, "wb");
         if (dst != NULL) {
             char Buffer[1024*32];  // 32kb
-            size_t size;
             while (!feof(src)) {
-                size = fread(Buffer, 1, sizeof(Buffer), src);
+                size_t size = fread(Buffer, 1, sizeof(Buffer), src);
                 if (fwrite(Buffer, 1, size, dst) != size) {
                     LOG_E("Error writing to file \"%s\".\n", toFileName);
                     Result = false;

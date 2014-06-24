@@ -110,34 +110,3 @@ string TCmdLineChecker::check(const TStringListMap& argsMap)
 }
 
 //------------------------------------------------------------------------------
-
-void TCmdLineChecker::howToUseMessage()
-{
-    printf(
-        //.......|.........|.........|.........|.........|.........|.........|.........|
-        "Usage: qtbinpatcher [options]\n"
-        "Options:\n"
-        "  --version      Show program version and exit.\n"
-        "  --help         Show this help and exit.\n"
-        "  --verbose      Print extended runtime information.\n"
-        "  --logfile=name Duplicate messages into logfile with name \"name\".\n"
-        "  --backup       Create and save backup for files that'll be patched.\n"
-        "  --nobackup     Don't create backup files in patch process.\n"
-        "                 This option incompatible with option \"--backup\".\n"
-        "                 WARNING: If an error occurs during operation, Qt library\n"
-        "                          can be permanently damaged!\n"
-        "    If missing --backup and no --nobackup, the backup files will be deleted"
-        "    after successful completion of the operation or restored if an error occurs.\n"
-        "  --force        Force patching (without old path actuality checking).\n"
-        "  --qt-dir=path  Directory, where Qt or qmake is now located (may be relative).\n"
-        "                 If not specified, patcher will try to find the file itself.\n"
-        "  --new-dir=path Directory where Qt will be located (may be relative).\n"
-        "                 If not specified, will be used the current location.\n"
-        "  --old-dir=path Directory where Qt was located. This option can be specified\n"
-        "                 more then once. The path will be replaced only in text files.\n"
-        "\n"
-        //.......|.........|.........|.........|.........|.........|.........|.........|
-    );
-}
-
-//------------------------------------------------------------------------------

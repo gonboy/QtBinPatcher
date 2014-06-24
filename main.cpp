@@ -29,14 +29,96 @@
 
 *******************************************************************************/
 
+#include <string>
+
+#include "Logger.hpp"
+#include "Functions.hpp"
+#include "CmdLineParser.hpp"
+#include "CmdLineChecker.hpp"
 #include "QtBinPatcher.hpp"
+
+//------------------------------------------------------------------------------
+
+void howToUseMessage()
+{
+    printf(
+        //.......|.........|.........|.........|.........|.........|.........|.........|
+        "\n"
+        "Usage: qtbinpatcher [options]\n"
+        "Options:\n"
+        "  --version      Show program version and exit.\n"
+        "  --help         Show this help and exit.\n"
+        "  --verbose      Print extended runtime information.\n"
+        "  --logfile=name Duplicate messages into logfile with name \"name\".\n"
+        "  --backup       Create and save backup for files that'll be patched.\n"
+        "                 This option incompatible with option --nobackup.\n"
+        "  --nobackup     Don't create backup files in patch process.\n"
+        "                 This option incompatible with option --backup.\n"
+        "                 WARNING: If an error occurs during operation, Qt library\n"
+        "                          can be permanently damaged!\n"
+        "  --force        Force patching (without old path actuality checking).\n"
+        "  --qt-dir=path  Directory, where Qt or qmake is now located (may be relative).\n"
+        "                 If not specified, patcher will try to find the file itself.\n"
+        "                 WARNING: If nonstandard directory for binary files is used,\n"
+        "                          select directory where located qmake.\n"
+        "  --new-dir=path Directory where Qt will be located (may be relative).\n"
+        "                 If not specified, will be used the current location.\n"
+        "  --old-dir=path Directory where Qt was located. This option can be specified\n"
+        "                 more then once. This path will be replaced only in text files.\n"
+        "\n"
+        "Remarks.\n"
+        "  1. If missing --backup and --nobackup options, the backup files will be\n"
+        "     created before patching and deleted after successful completion of the\n"
+        "     operation or restored if an error occurs.\n"
+        "  2. If missing --qt-dir options, patcher will search qmake first in current\n"
+        "     directory, and then in its subdir \"bin\".\n"
+        "\n"
+        //.......|.........|.........|.........|.........|.........|.........|.........|
+    );
+}
 
 //------------------------------------------------------------------------------
 
 int main(int argc, const char* argv[])
 {
-    TQtBinPatcher QtBinPatcher;
+    LOG("\n"
+        "QtBinPatcher v2.1.0. Tool for patching paths in Qt binaries.\n"
+        "Yuri V. Krugloff, 2013-2014. http://www.tver-soft.org\n"
+        "This is free software released into the public domain.\n\n");
 
-    return QtBinPatcher.exec(argc, argv);
+
+    TCmdLineParser CmdLineParser(argc, argv);
+    if (CmdLineParser.hasError()) {
+        LOG(CmdLineParser.errorString().c_str());
+        howToUseMessage();
+        return -1;
+    }
+    const TStringListMap& argsMap = CmdLineParser.argsMap();
+
+
+    std::string ErrorString = TCmdLineChecker::check(argsMap);
+    if (!ErrorString.empty()) {
+        LOG("%s\n", ErrorString.c_str());
+        howToUseMessage();
+        return -1;
+    }
+
+
+    TLogger::setVerbose(argsMap.contains("verbose"));
+    LOG_SET_FILENAME(argsMap.value("logfile").c_str());
+    LOG_V(CmdLineParser.dump().c_str());
+    LOG_V("Working directory: \"%s\".\n", Functions::currentDir().c_str());
+    LOG_V("Binary file location: \"%s\".\n", argv[0]);
+
+    if (argsMap.contains("help")) {
+        howToUseMessage();
+        return 0;
+    }
+
+    if (argsMap.contains("version"))
+        return 0;
+
+    return TQtBinPatcher::exec(argsMap) ? 0 : -1;
 }
+
 //------------------------------------------------------------------------------

@@ -82,7 +82,7 @@ TBackup::TBackup()
 
 TBackup::~TBackup()
 {
-    restoreBackup();
+    restore();
 }
 
 //------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ bool TBackup::backupFiles(const TStringList& files, TBackup::TBackupMethod metho
 
 //------------------------------------------------------------------------------
 
-bool TBackup::deleteBackup()
+bool TBackup::remove()
 {
     bool Result = true;
     if (!m_FilesMapping.empty()) {
@@ -149,7 +149,7 @@ bool TBackup::deleteBackup()
 
 //------------------------------------------------------------------------------
 
-bool TBackup::restoreBackup()
+bool TBackup::restore()
 {
     bool Result = true;
     if (!m_FilesMapping.empty()) {

@@ -29,72 +29,30 @@
 
 *******************************************************************************/
 
-#include "CmdLineParser.hpp"
-
-#include <string.h>
-
-//------------------------------------------------------------------------------
-
-using namespace std;
+#ifndef __QTBINPATCHER2_COMMON__
+#define __QTBINPATCHER2_COMMON__
 
 //------------------------------------------------------------------------------
 
-inline bool strStartingWith(const string& str1, const char *const str2)
+#include <string>
+#include <list>
+#include <map>
+
+//------------------------------------------------------------------------------
+
+typedef std::list<std::string> TStringList;
+typedef std::map<std::string, std::string> TStringMap;
+
+//------------------------------------------------------------------------------
+
+class TStringListMap : public std::map<std::string, TStringList>
 {
-    return str1.compare(0, strlen(str2), str2) == 0;
-}
+    public :
+        bool contains(const std::string& key) const;
+        std::string value(const std::string& key) const;
+        const TStringList* values(const std::string& key) const;
+};
 
 //------------------------------------------------------------------------------
 
-TCmdLineParser::TCmdLineParser(int argc, const char* argv[])
-{
-    for (int argNumber = 1; argNumber < argc; ++argNumber)
-    {
-        string Opt = argv[argNumber];
-        if (strStartingWith(Opt, "--") && Opt.length() > 2)
-        {
-            Opt = Opt.substr(2);
-            string::size_type pos = Opt.find("=");
-            string OptName = Opt.substr(0, pos);
-            string OptValue;
-            if (pos != string::npos)
-                OptValue = Opt.substr(pos+1);
-            if (!OptValue.empty())
-                m_ArgsMap[OptName].push_back(OptValue);
-            else
-                m_ArgsMap[OptName];
-        }
-        else {
-            m_ErrorString += "Unknown command line parameter: \"" + Opt + "\".\n";
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-
-string TCmdLineParser::dump() const
-{
-    string Result = "Parsed command line options:\n";
-    for (TStringListMap::const_iterator Iter = m_ArgsMap.begin(); Iter != m_ArgsMap.end(); ++Iter)
-    {
-        Result += "  " + Iter->first + ' ';
-        size_t spaces = Iter->first.length() + 3;
-        TStringList Values = Iter->second;
-        if (!Values.empty())
-        {
-            for (TStringList::const_iterator Jter = Values.begin(); Jter != Values.end(); ++Jter)
-            {
-                if (Jter != Values.begin())
-                    Result += string(spaces, ' ');
-                Result += '\"' + *Jter + "\"\n";
-            }
-        }
-        else {
-            Result += '\n';
-        }
-    }
-    Result += '\n';
-    return Result;
-}
-
-//------------------------------------------------------------------------------
+#endif
