@@ -29,21 +29,22 @@
 
 *******************************************************************************/
 
-#ifndef __QTBINPATCHER2_COMMON__
-#define __QTBINPATCHER2_COMMON__
+#ifndef __QTBINPATCHER2_CMDLINEOPTIONS__
+#define __QTBINPATCHER2_CMDLINEOPTIONS__
 
 //------------------------------------------------------------------------------
 
-#include <string>
-#include <list>
-#include <map>
+#define OPT_VERSION  "version"
+#define OPT_HELP     "help"
+#define OPT_VERBOSE  "verbose"
+#define OPT_LOGFILE  "logfile"
+#define OPT_BACKUP   "backup"
+#define OPT_NOBACKUP "nobackup"
+#define OPT_FORCE    "force"
+#define OPT_QT_DIR   "qt-dir"
+#define OPT_NEW_DIR  "new-dir"
+#define OPT_OLD_DIR  "old-dir"
 
 //------------------------------------------------------------------------------
 
-typedef std::list<std::string> TStringList;
-typedef std::map<std::string, TStringList> TStringListMap;
-typedef std::map<std::string, std::string> TStringMap;
-
-//------------------------------------------------------------------------------
-
-#endif
+#endif // __QTBINPATCHER2_CMDLINEOPTIONS__

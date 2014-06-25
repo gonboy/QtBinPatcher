@@ -65,8 +65,8 @@ class TBackup
         TBackup();
         ~TBackup();
 
-        bool backupFile(const std::string& fileName, TBackupMethod method = bmCopy);
-        bool backupFiles(const TStringList& files, TBackupMethod method = bmCopy);
+        bool backupFile(const std::string& fileName, const TBackupMethod method = bmCopy);
+        bool backupFiles(const TStringList& files, const TBackupMethod method = bmCopy);
         bool remove();
         bool restore();
         void save();

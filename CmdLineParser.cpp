@@ -58,11 +58,11 @@ TCmdLineParser::TCmdLineParser(int argc, const char* argv[])
             string OptName = Opt.substr(0, pos);
             string OptValue;
             if (pos != string::npos)
-                OptValue = Opt.substr(pos+1);
+                OptValue = Opt.substr(pos + 1);
             if (!OptValue.empty())
                 m_ArgsMap[OptName].push_back(OptValue);
             else
-                m_ArgsMap[OptName];
+                m_ArgsMap[OptName]; // Creating new key with empty value.
         }
         else {
             m_ErrorString += "Unknown command line parameter: \"" + Opt + "\".\n";

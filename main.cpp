@@ -33,6 +33,7 @@
 
 #include "Logger.hpp"
 #include "Functions.hpp"
+#include "CmdLineOptions.hpp"
 #include "CmdLineParser.hpp"
 #include "CmdLineChecker.hpp"
 #include "QtBinPatcher.hpp"
@@ -50,28 +51,28 @@ void howToUseMessage()
         "  --help         Show this help and exit.\n"
         "  --verbose      Print extended runtime information.\n"
         "  --logfile=name Duplicate messages into logfile with name \"name\".\n"
-        "  --backup       Create and save backup for files that'll be patched.\n"
-        "                 This option incompatible with option --nobackup.\n"
+        "  --backup       Create and save backup for files that will be patched.\n"
+        "                 This option incompatible with option \"--nobackup\".\n"
         "  --nobackup     Don't create backup files in patch process.\n"
-        "                 This option incompatible with option --backup.\n"
-        "                 WARNING: If an error occurs during operation, Qt library\n"
-        "                          can be permanently damaged!\n"
+        "                 This option incompatible with option \"--backup\".\n"
+        "                 WARNING: If an error occurs during patching, Qt library can be\n"
+        "                          permanently damaged!\n"
         "  --force        Force patching (without old path actuality checking).\n"
         "  --qt-dir=path  Directory, where Qt or qmake is now located (may be relative).\n"
-        "                 If not specified, patcher will try to find the file itself.\n"
-        "                 WARNING: If nonstandard directory for binary files is used,\n"
-        "                          select directory where located qmake.\n"
+        "                 If not specified, will be used current directory. Patcher will\n"
+        "                 search qmake first in directory \"path\", and then in its subdir\n"
+        "                 \"bin\". Patcher is NEVER looking qmake in other directories.\n"
+        "                 WARNING: If nonstandard directory for binary files is used\n"
+        "                          (not \"bin\"), select directory where located qmake.\n"
         "  --new-dir=path Directory where Qt will be located (may be relative).\n"
         "                 If not specified, will be used the current location.\n"
         "  --old-dir=path Directory where Qt was located. This option can be specified\n"
         "                 more then once. This path will be replaced only in text files.\n"
         "\n"
-        "Remarks.\n"
-        "  1. If missing --backup and --nobackup options, the backup files will be\n"
-        "     created before patching and deleted after successful completion of the\n"
-        "     operation or restored if an error occurs.\n"
-        "  2. If missing --qt-dir options, patcher will search qmake first in current\n"
-        "     directory, and then in its subdir \"bin\".\n"
+        "Remark.\n"
+        "  If missing \"--backup\" and \"--nobackup\" options, the backup files will be\n"
+        "  created before patching and deleted after successful completion of the\n"
+        "  patching or restored if an error occurs.\n"
         "\n"
         //.......|.........|.........|.........|.........|.........|.........|.........|
     );
@@ -89,7 +90,7 @@ int main(int argc, const char* argv[])
 
     TCmdLineParser CmdLineParser(argc, argv);
     if (CmdLineParser.hasError()) {
-        LOG(CmdLineParser.errorString().c_str());
+        LOG("%s\n", CmdLineParser.errorString().c_str());
         howToUseMessage();
         return -1;
     }
@@ -104,18 +105,18 @@ int main(int argc, const char* argv[])
     }
 
 
-    TLogger::setVerbose(argsMap.contains("verbose"));
-    LOG_SET_FILENAME(argsMap.value("logfile").c_str());
-    LOG_V(CmdLineParser.dump().c_str());
+    TLogger::setVerbose(argsMap.contains(OPT_VERBOSE));
+    LOG_SET_FILENAME(argsMap.value(OPT_LOGFILE).c_str());
+    LOG_V("%s\n", CmdLineParser.dump().c_str());
     LOG_V("Working directory: \"%s\".\n", Functions::currentDir().c_str());
     LOG_V("Binary file location: \"%s\".\n", argv[0]);
 
-    if (argsMap.contains("help")) {
+    if (argsMap.contains(OPT_HELP)) {
         howToUseMessage();
         return 0;
     }
 
-    if (argsMap.contains("version"))
+    if (argsMap.contains(OPT_VERSION))
         return 0;
 
     return TQtBinPatcher::exec(argsMap) ? 0 : -1;

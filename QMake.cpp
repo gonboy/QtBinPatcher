@@ -87,7 +87,7 @@ bool TQMake::query()
         m_QMakeOutput = getProgramOutput(QMakeStart);
         LOG_V("\n"
               ">>>>>>>>>> BEGIN QMAKE OUTPUT >>>>>>>>>>\n"
-              "%s\n"
+              "%s"
               "<<<<<<<<<<  END QMAKE OUTPUT  <<<<<<<<<<\n",
               m_QMakeOutput.c_str());
     }

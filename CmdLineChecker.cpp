@@ -31,7 +31,7 @@
 
 #include "CmdLineChecker.hpp"
 
-#include <stdio.h>
+#include "CmdLineOptions.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -55,15 +55,15 @@ void TCmdLineChecker::check(const string& option, const TCmdLineChecker::TOption
         {
             case otNoValue :
                 if (!Iter->second.empty())
-                    m_ErrorString += "Option --" + option + " cannot have value.\n";
+                    m_ErrorString += "Option \"--" + option + "\" cannot have value.\n";
                 break;
             case otSingleValue :
                 if (Iter->second.size() > 1)
-                    m_ErrorString += "Option --" + option + " can be only one.\n";
+                    m_ErrorString += "Option \"--" + option + "\" can be only one.\n";
                 // break is missing! It's right!
-            case otMultyValue :
+            case otMultiValue :
                 if (Iter->second.empty())
-                    m_ErrorString += "Option --" + option + " must have value.\n";
+                    m_ErrorString += "Option \"--" + option + "\" must have value.\n";
                 break;
         }
         m_ArgsMap.erase(Iter);
@@ -75,7 +75,7 @@ void TCmdLineChecker::check(const string& option, const TCmdLineChecker::TOption
 void TCmdLineChecker::checkIncompatible(const string& option1, const string& option2)
 {
     if (m_ArgsMap.find(option1) != m_ArgsMap.end() && m_ArgsMap.find(option2) != m_ArgsMap.end())
-        m_ErrorString += "Options --" + option1 + " and --" + option2 + " are incompatible.\n";
+        m_ErrorString += "Options \"--" + option1 + "\" and \"--" + option2 + "\" are incompatible.\n";
 }
 
 //------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ void TCmdLineChecker::checkIncompatible(const string& option1, const string& opt
 void TCmdLineChecker::endCheck()
 {
     for (TStringListMap::const_iterator Iter = m_ArgsMap.begin(); Iter != m_ArgsMap.end(); ++Iter)
-        m_ErrorString += "Unknown option: --" + Iter->first + ".\n";
+        m_ErrorString += "Unknown option: \"--" + Iter->first + "\".\n";
 
 }
 
@@ -93,17 +93,17 @@ string TCmdLineChecker::check(const TStringListMap& argsMap)
 {
     TCmdLineChecker Checker(argsMap);
 
-    Checker.checkIncompatible("backup", "nobackup");
-    Checker.check("version",  otNoValue);
-    Checker.check("help",     otNoValue);
-    Checker.check("verbose",  otNoValue);
-    Checker.check("logfile",  otSingleValue);
-    Checker.check("backup",   otNoValue);
-    Checker.check("nobackup", otNoValue);
-    Checker.check("force",    otNoValue);
-    Checker.check("qt-dir",   otSingleValue);
-    Checker.check("new-dir",  otSingleValue);
-    Checker.check("old-dir",  otMultyValue);
+    Checker.checkIncompatible(OPT_BACKUP, OPT_NOBACKUP);
+    Checker.check(OPT_VERSION,  otNoValue);
+    Checker.check(OPT_HELP,     otNoValue);
+    Checker.check(OPT_VERBOSE,  otNoValue);
+    Checker.check(OPT_LOGFILE,  otSingleValue);
+    Checker.check(OPT_BACKUP,   otNoValue);
+    Checker.check(OPT_NOBACKUP, otNoValue);
+    Checker.check(OPT_FORCE,    otNoValue);
+    Checker.check(OPT_QT_DIR,   otSingleValue);
+    Checker.check(OPT_NEW_DIR,  otSingleValue);
+    Checker.check(OPT_OLD_DIR,  otMultiValue);
     Checker.endCheck();
 
     return Checker.m_ErrorString;

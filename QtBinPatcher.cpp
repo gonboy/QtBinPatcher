@@ -40,6 +40,7 @@
 
 #include "Logger.hpp"
 #include "Functions.hpp"
+#include "CmdLineOptions.hpp"
 #include "CmdLineParser.hpp"
 #include "CmdLineChecker.hpp"
 #include "QMake.hpp"
@@ -86,7 +87,7 @@ bool strneq(const string& s1, const string& s2)
 
 string TQtBinPatcher::getStartDir() const
 {
-    string Result = normalizeSeparators(m_ArgsMap.value("qt-dir"));
+    string Result = normalizeSeparators(m_ArgsMap.value(OPT_QT_DIR));
     if (!Result.empty())
         Result = absolutePath(Result);
     return Result;
@@ -112,7 +113,7 @@ bool TQtBinPatcher::getNewQtDir()
 {
     assert(hasOnlyNormalSeparators(m_QtDir));
 
-    m_NewQtDir = normalizeSeparators(m_ArgsMap.value("new-dir"));
+    m_NewQtDir = normalizeSeparators(m_ArgsMap.value(OPT_NEW_DIR));
     if (!m_NewQtDir.empty())
         m_NewQtDir = absolutePath(m_NewQtDir);
     else
@@ -229,7 +230,7 @@ void TQtBinPatcher::createPatchValues()
     addTxtPatchValues(normalizeSeparators(m_QMake.qtInstallPrefix()));
     createBinPatchValues();
 
-    const TStringList* pValues = m_ArgsMap.values("old-dir");
+    const TStringList* pValues = m_ArgsMap.values(OPT_OLD_DIR);
     if (pValues != NULL)
         for (TStringList::const_iterator Iter = pValues->begin(); Iter != pValues->end(); ++Iter)
             addTxtPatchValues(normalizeSeparators(*Iter));
@@ -523,12 +524,12 @@ bool TQtBinPatcher::exec()
         return false;
 
     TBackup Backup;
-    Backup.setSkipBackup(m_ArgsMap.contains("nobackup"));
+    Backup.setSkipBackup(m_ArgsMap.contains(OPT_NOBACKUP));
     if (!Backup.backupFile(m_QtDir + "/bin/qt.conf", TBackup::bmRename))
         return false;
 
     if (!isPatchNeeded()) {
-        if (m_ArgsMap.contains("force")) {
+        if (m_ArgsMap.contains(OPT_FORCE)) {
             LOG("\nThe new and the old pathes to Qt directory are the same.\n"
                 "Perform forced patching.\n\n");
         }
@@ -550,7 +551,7 @@ bool TQtBinPatcher::exec()
         return false;
 
     // Finalization.
-    if (m_ArgsMap.contains("backup"))
+    if (m_ArgsMap.contains(OPT_BACKUP))
         Backup.save();
     else
         if (!Backup.remove())
@@ -568,7 +569,7 @@ TQtBinPatcher::TQtBinPatcher(const TStringListMap& argsMap)
 {
     if (m_QMake.hasError()) {
         m_hasError = true;
-        LOG_E(m_QMake.errorString().c_str());
+        LOG_E("%s\n", m_QMake.errorString().c_str());
     }
     else {
         m_hasError = !exec();

@@ -42,7 +42,7 @@ class TCmdLineParser
 {
     private :
         TStringListMap m_ArgsMap;
-        std::string m_ErrorString;
+        std::string    m_ErrorString;
 
     public :
         TCmdLineParser(int argc, const char* argv[]);
