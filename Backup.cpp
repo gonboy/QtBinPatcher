@@ -59,7 +59,7 @@ const char* const TBackup::bakFileSuffix = ".bak";
 string TBackup::backupFileName(const string& fileName)
 {
     string BakFileName = fileName + bakFileSuffix;
-    int i = 0;
+    unsigned int i = 0;
     while (isFileExists(BakFileName)) {
         stringstream SStream;
         SStream << fileName << '.' << currentTime("%Y-%m-%d_%H-%M-%S");
@@ -87,12 +87,15 @@ TBackup::~TBackup()
 
 //------------------------------------------------------------------------------
 
-bool TBackup::backupFile(const string& fileName, TBackupMethod method)
+bool TBackup::backupFile(const string& fileName, const TBackupMethod method)
 {
-    if (isFileExists(fileName)) {
-        if (!m_SkipBackup) {
+    if (isFileExists(fileName))
+    {
+        if (!m_SkipBackup)
+        {
             string BakFileName = backupFileName(fileName);
-            switch (method) {
+            switch (method)
+            {
                 case bmCopy :
                     if (!copyFile(fileName, BakFileName))
                         return false;
@@ -105,9 +108,8 @@ bool TBackup::backupFile(const string& fileName, TBackupMethod method)
             m_FilesMapping.push_back(TFileMapping(fileName, BakFileName));
         }
         else {
-            if (method == bmRename)
-                if (!removeFile(fileName))
-                    return false;
+            if (method == bmRename && !removeFile(fileName))
+                return false;
         }
     }
     else {
@@ -121,7 +123,7 @@ bool TBackup::backupFile(const string& fileName, TBackupMethod method)
 
 //------------------------------------------------------------------------------
 
-bool TBackup::backupFiles(const TStringList& files, TBackup::TBackupMethod method)
+bool TBackup::backupFiles(const TStringList& files, const TBackupMethod method)
 {
     if (m_SkipBackup && method == bmCopy)
         return true;

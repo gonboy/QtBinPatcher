@@ -44,7 +44,7 @@ class TCmdLineChecker
         enum TOptionType {
             otNoValue,
             otSingleValue,
-            otMultyValue
+            otMultiValue
         };
 
         TStringListMap m_ArgsMap;

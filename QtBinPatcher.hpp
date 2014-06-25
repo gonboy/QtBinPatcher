@@ -44,14 +44,14 @@ class TQtBinPatcher
 {
     private :
         const TStringListMap& m_ArgsMap;
-        std::string    m_QtDir;
-        std::string    m_NewQtDir;
-        TStringMap     m_TxtPatchValues;
-        TStringMap     m_BinPatchValues;
-        TStringList    m_TxtFilesForPatch;
-        TStringList    m_BinFilesForPatch;
-        TQMake         m_QMake;
-        bool           m_hasError;
+        std::string m_QtDir;
+        std::string m_NewQtDir;
+        TStringMap  m_TxtPatchValues;
+        TStringMap  m_BinPatchValues;
+        TStringList m_TxtFilesForPatch;
+        TStringList m_BinFilesForPatch;
+        TQMake      m_QMake;
+        bool        m_hasError;
 
         std::string getStartDir() const;
         bool getQtDir();
@@ -70,6 +70,7 @@ class TQtBinPatcher
         bool exec();
 
         TQtBinPatcher(const TStringListMap& argsMap);
+
     public :
         static bool exec(const TStringListMap& argsMap);
 

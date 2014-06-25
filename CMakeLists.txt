@@ -40,6 +40,7 @@ set(SRC_LIST
     CommonTypes.cpp    CommonTypes.hpp
     Logger.cpp         Logger.hpp
     Functions.cpp      Functions.hpp
+                       CmdLineOptions.hpp
     CmdLineParser.cpp  CmdLineParser.hpp
     CmdLineChecker.cpp CmdLineChecker.hpp
     QMake.cpp          QMake.hpp

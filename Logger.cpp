@@ -31,7 +31,6 @@
 
 #include "Logger.hpp"
 
-#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 
@@ -84,8 +83,9 @@ void TLogger::setFileName(const char* const fileName)
     if (fileName != NULL && strlen(fileName) > 0) {
         m_pFile = fopen(fileName, "w");
         if (m_pFile == NULL) {
-            printf("Error opening logfile\"%s\".\nError %i.\n",
-                   fileName, errno);
+            fprintf(stderr, "Error opening logfile\"%s\".\n"
+                            "Error %i.\n",
+                    fileName, errno);
         }
     }
     else {
