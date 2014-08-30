@@ -1,3 +1,6 @@
+2014-08-30. Version 2.1.1.
+    * Fixed a bug with deleting file qt.conf before start qmake.
+
 2014-06-25. Version 2.1.0.
     * Changing directory separator for Windows (now is '/').
     * Autodetect subfolders for Qt parts (support nonstandard subdirs).
@@ -7,7 +10,7 @@
 2014-06-09. Version 2.0.0.
     * Added function to replace in text files specified path
      (--old-dir parameter).
-    * Added function to record specified path in binary and text files 
+    * Added function to record specified path in binary and text files
       (--new-dir parameter). (Earlier this path was determined automatically
       and could not be changed.)
     * Relative path in command line parameter --qt-dir is allowed.
@@ -25,7 +28,7 @@
     * Added QT_HOST_LIBS variable to qmake patch.
 
 2013-12-24. Version 1.1.1.
-    * Fixed a bug related to the inability to parse qmake output, when in 
+    * Fixed a bug related to the inability to parse qmake output, when in
       paths in qmake output has a space.
 
 2013-05-21. Version 1.1.0.

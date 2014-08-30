@@ -70,8 +70,6 @@ class TQMake
             { return m_ErrorString; }
         inline bool hasError() const
             { return !m_ErrorString.empty(); }
-        inline const std::string& qmakePath() const
-            { return m_QMakePath; }
         inline const std::string& qtPath() const
             { return m_QtPath; }
         inline char qtVersion() const

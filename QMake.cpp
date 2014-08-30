@@ -36,6 +36,7 @@
 
 #include "Functions.hpp"
 #include "Logger.hpp"
+#include "Backup.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -57,19 +58,17 @@ const string TQMake::m_BinDirName("bin");
 
 bool TQMake::find(const string& qtDir)
 {
-    const string BaseDir = qtDir.empty() ? currentDir() : qtDir;
-
-    m_QMakePath = BaseDir + separator() + m_QMakeName;
-    if (!isFileExists(m_QMakePath)) {
-        m_QMakePath = BaseDir + separator() + m_BinDirName + separator() + m_QMakeName;
-        if (!isFileExists(m_QMakePath))
+    m_QMakePath = (qtDir.empty() ? currentDir() : qtDir) + separator();
+    if (!isFileExists(m_QMakePath + m_QMakeName)) {
+        m_QMakePath += m_BinDirName + separator();
+        if (!isFileExists(m_QMakePath + m_QMakeName))
             m_QMakePath.clear();
     }
 
     if (m_QMakePath.empty())
         m_ErrorString += "Can't find qmake.\n";
     else
-        LOG_V("Path to qmake: \"%s\".\n", m_QMakePath.c_str());
+        LOG_V("Path to \"%s\": \"%s\".\n", m_QMakeName.c_str(), m_QMakePath.c_str());
 
     return !m_QMakePath.empty();
 }
@@ -81,7 +80,7 @@ bool TQMake::query()
     m_QMakeOutput.clear();
     if (!m_QMakePath.empty())
     {
-        string QMakeStart = "\"\"" + m_QMakePath + "\" -query\"";
+        string QMakeStart = "\"\"" + m_QMakePath + m_QMakeName + "\" -query\"";
         LOG_V("qmake command line: %s.\n", QMakeStart.c_str());
 
         m_QMakeOutput = getProgramOutput(QMakeStart);
@@ -227,7 +226,11 @@ bool TQMake::getQtPath()
 TQMake::TQMake(const string& qtDir)
     : m_QtVersion('\0')
 {
-    find(qtDir) && query() && parse() && getQtPath();
+    if (find(qtDir)) {
+        TBackup Backup;
+        Backup.backupFile(m_QMakePath + "qt.conf", TBackup::bmRename);
+        query() && parse() && getQtPath();
+    }
 }
 
 //------------------------------------------------------------------------------
