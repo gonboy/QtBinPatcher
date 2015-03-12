@@ -80,7 +80,10 @@ bool TQMake::query()
     m_QMakeOutput.clear();
     if (!m_QMakePath.empty())
     {
-        string QMakeStart = "\"\"" + m_QMakePath + m_QMakeName + "\" -query\"";
+        string QMakeStart = "\"" + m_QMakePath + m_QMakeName + "\" -query";
+        #ifdef OS_WINDOWS
+            QMakeStart = "\"" + QMakeStart + "\"";
+        #endif
         LOG_V("qmake command line: %s.\n", QMakeStart.c_str());
 
         m_QMakeOutput = getProgramOutput(QMakeStart);
@@ -129,7 +132,9 @@ bool TQMake::parseValues()
 
 //------------------------------------------------------------------------------
 
-bool TQMake::addSuffix(const TStringMap::const_iterator& Iter, const string& prefix)
+bool TQMake::addSuffix(const TStringMap::const_iterator& Iter,
+                       const string& prefix,
+                       bool ignoreError)
 {
     assert(hasOnlyNormalSeparators(prefix));
 
@@ -142,9 +147,14 @@ bool TQMake::addSuffix(const TStringMap::const_iterator& Iter, const string& pre
                 m_Suffixes[Iter->first] = normalizeSeparators(value);
         }
         else {
-            m_ErrorString += "QMake variable \"" + Iter->first +
-                             "\" with value \"" + Iter->second +
-                             "\" don't have prefix \"" + prefix + "\".\n";
+            string errorString = "QMake variable \"" + Iter->first +
+                                 "\" with value \"" + Iter->second +
+                                 "\" don't have prefix \"" + prefix + "\".\n";
+            if (ignoreError) {
+                LOG_V(errorString.c_str());
+                return true;
+            }
+            m_ErrorString += errorString;
             return false;
         }
     }
@@ -155,16 +165,26 @@ bool TQMake::addSuffix(const TStringMap::const_iterator& Iter, const string& pre
 
 bool TQMake::parseSuffixes()
 {
+    static const char* ignoredValues[] = {
+        "QT_INSTALL_CONFIGURATION"
+    };
+
     string prefix = normalizeSeparators(qtInstallPrefix());
     string hostPrefix = normalizeSeparators(qtHostPrefix());
     for (TStringMap::iterator Iter = m_QMakeValues.begin(); Iter != m_QMakeValues.end(); ++Iter)
     {
+        bool ignoreError = false;
+        for (size_t i = 0; i < sizeof(ignoredValues)/sizeof(ignoredValues[0]); ++i)
+            if (Iter->first.compare(ignoredValues[0]) == 0) {
+                ignoreError = true;
+                break;
+            }
         if (startsWith(Iter->first, "QT_INSTALL_")) {
-            if (!addSuffix(Iter, prefix))
+            if (!addSuffix(Iter, prefix, ignoreError))
                 return false;
         }
         else if (startsWith(Iter->first, "QT_HOST_")) {
-            if (!addSuffix(Iter, hostPrefix))
+            if (!addSuffix(Iter, hostPrefix, ignoreError))
                 return false;
         }
     }

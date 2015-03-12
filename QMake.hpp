@@ -55,7 +55,9 @@ class TQMake
         bool find(const std::string& qtDir);
         bool query();
         bool parseValues();
-        bool addSuffix(const TStringMap::const_iterator& Iter, const std::string& prefix);
+        bool addSuffix(const TStringMap::const_iterator& Iter,
+                       const std::string& prefix,
+                       bool ignoreError);
         bool parseSuffixes();
         bool parse();
         bool getQtPath();

@@ -63,6 +63,12 @@ using namespace std;
     #define PCLOSE pclose
 #endif
 
+#ifdef OS_WINDOWS
+    #define POPEN_MODE "rt"
+#else
+    #define POPEN_MODE "r"
+#endif
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -356,7 +362,7 @@ std::string Functions::getProgramOutput(const char* fileName)
 {
     string Result;
     FILE* out;
-    out = POPEN(fileName, "rt");
+    out = POPEN(fileName, POPEN_MODE);
     if (out != NULL)
     {
         char Buffer[1024];

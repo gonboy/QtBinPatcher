@@ -57,12 +57,15 @@ TLogger::~TLogger()
 
 void TLogger::printf(FILE* stdstream, const char* const format, va_list vaList)
 {
-    vfprintf(stdstream, format, vaList);
-    fflush(stdstream);
     if (m_pFile != NULL) {
-        vfprintf(m_pFile, format, vaList);
+        va_list vaList2;
+        va_copy(vaList2, vaList);
+        vfprintf(m_pFile, format, vaList2);
+        va_end(vaList2);
         fflush(m_pFile);
     }
+    vfprintf(stdstream, format, vaList);
+    fflush(stdstream);
 }
 
 //------------------------------------------------------------------------------

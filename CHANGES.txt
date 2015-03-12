@@ -1,3 +1,8 @@
+2015-03-12. Version 2.1.2.
+    * Fixed uncorrect qmake executing in Linux.
+    * Fixed uncorrect logging in Linux.
+    * Ignoring QT_INSTALL_CONFIGURATION variable.
+
 2014-08-30. Version 2.1.1.
     * Fixed a bug with deleting file qt.conf before start qmake.
 
