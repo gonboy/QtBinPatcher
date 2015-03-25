@@ -1,6 +1,6 @@
 #*******************************************************************************
 #
-#        Yuri V. Krugloff. 2013-2014. http://www.tver-soft.org
+#        Yuri V. Krugloff. 2013-2015. http://www.tver-soft.org
 #
 #   This is free and unencumbered software released into the public domain.
 #
@@ -71,6 +71,9 @@ if(WIN32)
                 string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
             endif()
         endforeach()
+        if((CMAKE_SIZEOF_VOID_P EQUAL 4) AND (MSVC_VERSION GREATER 1700))
+            set(CMAKE_CREATE_CONSOLE_EXE /SUBSYSTEM:CONSOLE,5.01)
+        endif()
     endif()
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_definitions(-DOS_LINUX)

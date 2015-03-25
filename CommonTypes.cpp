@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-         Yuri V. Krugloff. 2013-2014. http://www.tver-soft.org
+         Yuri V. Krugloff. 2013-2015. http://www.tver-soft.org
 
     This is free and unencumbered software released into the public domain.
 

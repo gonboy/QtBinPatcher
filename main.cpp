@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-         Yuri V. Krugloff. 2013-2014. http://www.tver-soft.org
+         Yuri V. Krugloff. 2013-2015. http://www.tver-soft.org
 
     This is free and unencumbered software released into the public domain.
 
@@ -83,7 +83,7 @@ void howToUseMessage()
 int main(int argc, const char* argv[])
 {
     LOG("\n"
-        "QtBinPatcher v2.1.2. Tool for patching paths in Qt binaries.\n"
+        "QtBinPatcher v2.1.3. Tool for patching paths in Qt binaries.\n"
         "Yuri V. Krugloff, 2013-2015. http://www.tver-soft.org\n"
         "This is free software released into the public domain.\n\n");
 
