@@ -256,11 +256,13 @@ bool TQtBinPatcher::createTxtFilesForPatchList()
     static const TElement Elements4[] = {
         { "/lib/",             "*.prl",              false },
         { "/demos/shared/",    "libdemo_shared.prl", false },
-        { "/lib/pkgconfig/",   "*.pc",               false },
+        { "/lib/pkgconfig/",   "Qt*.pc",             false },
+        { "/lib/pkgconfig/",   "phonon*.pc",         false },
 #if defined(OS_WINDOWS)
         { "/mkspecs/default/", "qmake.conf",         false },
         { "/",                 ".qmake.cache",       false }
 #elif defined(OS_LINUX)
+        { "/lib/pkgconfig/",   "qt*.pc",             false },
         { "/lib/",             "*.la",               false },
         { "/mkspecs/",         "qconfig.pri",        false }
 #endif
@@ -270,7 +272,8 @@ bool TQtBinPatcher::createTxtFilesForPatchList()
     static const TElement Elements5[] = {
         { "/",                            "*.la",                         true  },
         { "/",                            "*.prl",                        true  },
-        { "/",                            "*.pc",                         true  },
+        { "/lib/pkgconfig/",              "Qt5*.pc",                      true  },
+        { "/lib/pkgconfig/",              "Enginio*.pc",                  true  },
         { "/",                            "*.pri",                        true  },
         { "/lib/cmake/Qt5LinguistTools/", "Qt5LinguistToolsConfig.cmake", false },
         { "/mkspecs/default-host/",       "qmake.conf",                   false },
