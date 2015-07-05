@@ -193,6 +193,7 @@ void TQtBinPatcher::createBinPatchValues()
         { "QT_INSTALL_DEMOS",        "qt_demopath="},
         { "QT_INSTALL_TESTS",        "qt_tstspath="},
         { "QT_HOST_PREFIX",          "qt_hpfxpath="},
+        { "QT_INSTALL_PREFIX",       "qt_epfxpath="},  // "QT_EXT_PREFIX"
         { "QT_HOST_BINS",            "qt_hbinpath="},
         { "QT_HOST_DATA",            "qt_hdatpath="},
         { "QT_HOST_LIBS",            "qt_hlibpath="}
@@ -204,15 +205,13 @@ void TQtBinPatcher::createBinPatchValues()
     for (size_t i = 0; i < sizeof(Params)/sizeof(Params[0]); ++i)
     {
         const TParam& Param = Params[i];
-        string OldValue = m_QMake.value(Param.Name);
-        if (!OldValue.empty()) {
-            OldValue.insert(0, Param.Prefix);
+        if (!m_QMake.value(Param.Name).empty()) {
             string NewValue = Param.Prefix;
             NewValue.append(newQtDirNative);
             const std::string suffix = m_QMake.suffix(Param.Name);
             if (!suffix.empty())
                 NewValue += separator() + suffix;
-            m_BinPatchValues[OldValue] = NewValue;
+            m_BinPatchValues[Param.Prefix] = NewValue;
         }
         else {
             LOG_V("Variable \"%s\" not found in qmake output.\n", Param.Name);
@@ -469,12 +468,6 @@ bool TQtBinPatcher::patchBinFile(const string& fileName)
                 {
                     strcpy(First, Iter->second.c_str());
                     First += Iter->second.length();
-                    int Delta = static_cast<int>(Iter->first.length()) -
-                                static_cast<int>(Iter->second.length());
-                    if (Delta > 0) {
-                        memset(First, 0, Delta);
-                        First += Delta;
-                    }
                 }
             }
             rewind(File);

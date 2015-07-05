@@ -1,3 +1,7 @@
+2015-07-05. Version 2.2.0.
+    * Added support for Qt 5.5 (Thanks to Alexpux (alexey.pawlow@gmail.com)).
+    * Changed algorithm for patching of binary files.
+
 2015-06-12. Version 2.1.4.
     * Patching only Qt's *.pc files.
 
